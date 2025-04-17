@@ -1,1 +1,5 @@
 secret
+build
+*.o
+*.so
+*.ll
