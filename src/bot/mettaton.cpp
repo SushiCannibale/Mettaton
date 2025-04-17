@@ -6,7 +6,7 @@
 
 bool load_token(std::ostream& ostr)
 {
-    char* tokenfile = std::getenv("UwU");
+    char* tokenfile = std::getenv("TOKEN");
     if (tokenfile == nullptr)
     {
         return false;
