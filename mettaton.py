@@ -1,39 +1,68 @@
+import os.environ
+import datetime
 import requests
-import discord
-from random import randint 
+
+from discord import Intents
+from discord.ext.commands import Bot
 from discord.ext import tasks
 
+from random import randint 
+
+midnight_uwu = datetime.time(hour=23, minute=0, second=0)
+
 # The neko channel
-CHANNEL: int = 1326286426052231229
-URL = 'https://nekos.best/api/v2/neko'
-# TYPES = [ 
-#     'baka', 'bite', 'blush', 'bored', 'cry', 'cuddle', 
-#     'dance', 'facepalm', 'feed', 'handhold', 'handshake', 
-#     'happy', 'highfive', 'hug', 'kick','kiss', 'laugh', 'lurk', 
-#     'nod', 'nom', 'nope', 'pat', 'peck', 'poke', 'pout', 'punch', 
-#     'shoot', 'shrug', 'slap', 'sleep', 'smile', 'smug', 'stare', 
-#     'think', 'thumbsup', 'tickle', 'wave', 'wink', 'yawn', 'yeet' 
-# ]
+URL = 'https://api.thecatapi.com/v1/images/search'
 
-class Mettaton(discord.Client):
-    def __init__(self, intents: discord.Intents):
-        super().__init__(intents=intents)
+class Mettaton:
+    def __init__(self):
+        intents = Intents.default()
+        intents.message_content = True
+        
+        self.bot = Bot(command_prefix="$", intents=intents)
 
-    async def on_ready(self):
-        print("Ready !")
-        await self.send_neko.start()
-        # for member in self.get_all_members():
-        #     for id in self.victimsID:
-        #         if member.id == id:
-        #             self.victims.append(member)
-        # await self.annoy.start()        
+        self.neko_channels : set[int] = [ ]
+        self.cmds_channels : set[int] = [ ]
+        self.next_neko = 0
 
-    @tasks.loop(hours=24)
-    async def send_neko(self):
-        # type = TYPES[randint(0, len(TYPES))]
-        req = requests.get(URL)# + type)
+        self.register_commands()
+
+        self.bot.event(self.on_ready)
+
+    def run(self, token: str):
+        self.bot.run(token)
+
+    def register(self, chan : int):
+        self.channels.add(chan)
+
+    def unregister(self, chan : int):
+        self.channels.remove(chan)
+
+    def request_nekos(self, limit : int, url : str):
+        buf = environ.get("NEKOS")
+        req = requests.get(URL + "?limit=10")# + type)
         print(req)
         if (req.status_code == 200):
             data = req.json()
             print(data)
-            await self.get_channel(CHANNEL).send(content=data['results'][0]['url'])
+            
+    async def on_ready(self):
+        print(f"{self.bot.user} ready")
+
+    def register_commands(self):
+        @self.bot.command(name="ping", description="pings me >:3")
+        async def ping(ctx):
+            await ctx.send("pong")
+
+        @self.bot.command(name="listens")
+        async def listens(ctx):
+            await ctx.send(ctx.message)
+
+        @self.bot.command(name="neko", description="Fetch a neko from out of bound")
+        async def neko(ctx):
+            req = requests.get(URL + "?limit=10")# + type)
+            print(req)
+            if (req.status_code == 200):
+                data = req.json()
+                print(data)
+            #     for channel in self.neko_channels:
+            #         await self.get_channel(channel).send(content=data[0]['url'])
