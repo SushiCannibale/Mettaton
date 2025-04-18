@@ -1,8 +1,7 @@
 find_package(dpp REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE dpp)
 
 # if(DPP-NOTFOUND)
-    include_directories(${PROJECT_NAME} ${dpp_INCLUDE_DIR})
-    target_link_libraries(${PROJECT_NAME} ${dpp_LIBRARIES})
 # else()
     # message("Library not found. building from source")
 # include(FetchContent)
@@ -15,6 +14,5 @@ find_package(dpp REQUIRED)
 # FetchContent_MakeAvailable(dpp)
 # endif()
 
-target_link_libraries(${PROJECT_NAME} PRIVATE dpp)
 target_include_directories(${PROJECT_NAME} PRIVATE ".")
 target_sources(${PROJECT_NAME} PRIVATE "mettaton.cpp")
