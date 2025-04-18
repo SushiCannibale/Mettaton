@@ -3,7 +3,7 @@ project(mettaton)
 set(LIBNEKO "libneko")
 
 add_executable(${PROJECT_NAME})
-add_library(${LIBNEKO})
+add_library(${LIBNEKO} SHARED)
 
 target_compile_options(${PROJECT_NAME} PRIVATE 
     -Wall
@@ -27,7 +27,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     "include/"
 )
 
-add_subdirectory("src/bot/")
 add_subdirectory("src/libneko/")
+add_subdirectory("src/bot/")
 
 set_target_properties(${LIBNEKO} PROPERTIES OUTPUT_NAME neko)
