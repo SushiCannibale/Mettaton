@@ -1,14 +1,14 @@
 #pragma once
 
-#include <curl/curl.h>
 #include <string>
 
 /**
- * @brief Load nekos URL from disk
+ * @brief Fetch nekos from the API and puts the raw result into the stream
  */
-void load_nekos(std::string filename, int* json_out);
+int fetch_nekos(std::istream& istr);
 
 /**
- * @brief Write nekos from json to ostr
+ * @brief Loads nekos from disk. Fills it if necessary
  */
-void write_nekos(int* json, std::string filename);
+
+int load_nekos(std::string filename, int* json);
