@@ -8,6 +8,8 @@ COPY . .
 # TODO: mount secret file
 ENV TOKEN='secret'
 ENV NEKOS_SOURCE='https://api.thecatapi.com/v1/images/search'
+ENV NEKO_STORE='neko-store'
+ENV NEKOS_BATCH='20'
 
-CMD [ "cmake", "-S", ".", "-B", "build" ]
+CMD [ "cmake", "-B", "build" ]
 CMD [ "cmake", "--build", "build" ]
