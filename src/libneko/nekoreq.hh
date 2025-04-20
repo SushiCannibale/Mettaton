@@ -1,14 +1,29 @@
 #pragma once
 
+#include <nlohmann/json.hpp>
+#include <nlohmann/json_fwd.hpp>
 #include <string>
+#include <vector>
 
-/**
- * @brief Fetch nekos from the API and puts the raw result into the stream
- */
-int fetch_nekos(std::istream& istr);
+namespace nekolib
+{
+    struct NekoStore
+    {
+        int id_next;
+        std::vector<struct Neko> nekos;
 
-/**
- * @brief Loads nekos from disk. Fills it if necessary
- */
+        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(NekoStore, id_next, nekos)
+    };
 
-int load_nekos(std::string filename, int* json);
+    struct Neko
+    {
+        std::string id;
+        std::string url;
+        int width;
+        int height;
+
+        NLOHMANN_DEFINE_TYPE_INTRUSIVE(Neko, id, url, width, height)
+    };
+
+    int save_nekos(std::string filename, std::string url);
+} // namespace nekolib
