@@ -4,3 +4,4 @@ build
 *.so
 *.ll
 .cache
+compile_commands.json
