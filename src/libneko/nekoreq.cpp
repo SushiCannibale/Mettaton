@@ -1,27 +1,34 @@
-#include "nekoreq.hh"
+#include "nekoreq.hpp"
 
+#include <cstdlib>
 #include <curl/curl.h>
 #include <curl/easy.h>
 #include <fstream>
 #include <iostream>
-#include <nlohmann/detail/exceptions.hpp>
-#include <nlohmann/json.hpp>
 #include <string>
+
+#include "mettaton/libneko.h"
 
 namespace nekolib
 {
     using json = nlohmann::json;
 
-    /**
-     * @brief Callback function for curl GET at neko source.
-     *
-     * @param data The data to be written
-     * @param ostr The stream in which data will be written
-     */
-    static void write_nekos(char* data, size_t size, size_t nmemb,
-                            std::ofstream* ostr)
+    int save_nekos(NekoStore* store, std::string filename)
     {
-        ostr->write(data, size * nmemb);
+        NekoStoreImpl* impl = dynamic_cast<NekoStoreImpl*>(store);
+        return save_nekos_impl(impl, filename);
+    }
+
+    int load_nekos(NekoStore* store, std::string filename)
+    {
+        NekoStoreImpl* impl = dynamic_cast<NekoStoreImpl*>(store);
+        return save_nekos_impl(impl, filename);
+    }
+
+    std::string get_neko(NekoStore* store)
+    {
+        NekoStoreImpl* impl = dynamic_cast<NekoStoreImpl*>(store);
+        return get_neko_impl(impl);
     }
 
     /**
@@ -37,7 +44,11 @@ namespace nekolib
         {
             curl_easy_setopt(curl, CURLOPT_URL, url);
 
-            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_nekos);
+            curl_easy_setopt(
+                curl, CURLOPT_WRITEFUNCTION,
+                [](char* data, size_t size, size_t nmemb, std::ofstream* ostr) {
+                    ostr->write(data, size * nmemb);
+                });
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ostr);
 
             curl_easy_perform(curl);
@@ -46,31 +57,86 @@ namespace nekolib
         return 0;
     }
 
-    int save_nekos(std::string filename, std::string url)
+    NekoStore* make_store()
+    {
+        NekoStoreImpl* store = new NekoStoreImpl;
+        const char* store_loc = std::getenv("NEKO_STORE_LOC");
+        const char* neko_source = std::getenv("NEKOS_SOURCE");
+        if (store_loc == nullptr || neko_source == nullptr)
+        {
+            return nullptr;
+        }
+        std::ofstream ostr(store_loc);
+        fetch_nekos(ostr, neko_source);
+        save_nekos(store, store_loc);
+        return store;
+    }
+
+    int save_nekos_impl(NekoStoreImpl* store, std::string filename)
     {
         std::ofstream ostr(filename);
-        fetch_nekos(ostr, url.c_str());
-        ostr.close();
+        /// TODO: fix me
+        json serialized = *store;
+        ostr << serialized;
+        return 0;
+    }
 
+    // std::ofstream ostr(filename);
+    // fetch_nekos(ostr, url.c_str());
+    // ostr.close();
+
+    // std::ifstream istr(filename);
+
+    // json json = store;
+    // json["id_next"] = 0UL;
+    // try
+    // {
+    //     json["nekos"] = json::parse(istr);
+    // }
+    // catch (const json::parse_error& e)
+    // {
+    //     std::cerr << e.what() << std::endl;
+    //     return 1;
+    // }
+    // istr.close();
+
+    // ostr = std::ofstream(filename);
+    // ostr << json;
+    // ostr.close();
+
+    // return 0;
+
+    int load_nekos_impl(NekoStoreImpl* store, std::string filename)
+    {
         std::ifstream istr(filename);
-
         json json;
-        json["id_next"] = 0;
+        int status = 0;
         try
         {
-            json["nekos"] = json::parse(istr);
+            json = json::parse(istr);
         }
         catch (const json::parse_error& e)
         {
             std::cerr << e.what() << std::endl;
-            return 1;
+            status = 1;
         }
         istr.close();
 
-        ostr = std::ofstream(filename);
-        ostr << json;
-        ostr.close();
+        /// TODO: fix me
+        json.get_to<NekoStoreImpl>(*store);
+        return status;
+    }
 
+    std::string get_neko_impl(NekoStoreImpl* store)
+    {
+        if (store->id_next >= store->nekos.size())
+        {
+            /// TODO: reached the end of the buffer, refill the store in nekos
+        }
+        else
+        {
+            return store->nekos[store->id_next++].url;
+        }
         return 0;
     }
 } // namespace nekolib

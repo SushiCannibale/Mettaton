@@ -1,13 +1,12 @@
-#include <mettaton/mettaton.h>
-// #include <dpp/cluster.h>
-// #include <dpp/dispatcher.h>
-// #include <dpp/once.h>
-#include <fstream>
-#include <sstream>
+#include <dpp/appcommand.h>
+#include <dpp/dpp.h>
+#include <dpp/message.h>
+#include <mettaton/libneko.h>
 
-bool load_token(std::ostream& ostr)
+static bool read_token(std::ostream& ostr)
 {
-    char* tokenfile = std::getenv("TOKEN");
+    /// TOOD: char* tokenfile = std::getenv("TOKEN_LOC");
+    const char* tokenfile = "secret";
     if (tokenfile == nullptr)
     {
         return false;
@@ -19,7 +18,7 @@ bool load_token(std::ostream& ostr)
     {
         return false;
     }
-    while (!ifs.is_open())
+    while (!ifs.eof())
     {
         std::getline(ifs, buf);
         ostr << buf;
@@ -31,19 +30,37 @@ bool load_token(std::ostream& ostr)
 int main()
 {
     std::stringstream sstr;
-    load_token(sstr);
-    // dpp::cluster bot(sstr.str());
+    read_token(sstr);
+    dpp::cluster bot(sstr.str());
+    nekolib::NekoStore* store = nekolib::make_store();
 
     /// Register handlers
-    // bot.on_ready([&bot](const dpp::ready_t& event) {
-    //     (void)event;
-    //     if (dpp::run_once<struct uwuland_registry>())
-    //     {
-    //         bot.global_command_create(
-    //             dpp::slashcommand("ping", "Dare u ping me", bot.me.id));
-    //     }
-    // });
+    bot.on_ready([&bot](const dpp::ready_t& event) {
+        (void)event;
+        if (dpp::run_once<struct uwuland_registry>())
+        {
+            std::cout << bot.me.username << " ready!\n";
+            bot.global_command_create(
+                dpp::slashcommand("ping", "Dare u ping me", bot.me.id));
+            bot.global_command_create(
+                dpp::slashcommand("neko", "Some cute neko", bot.me.id));
+        }
+    });
 
-    // bot.start(dpp::st_wait);
+    bot.on_slashcommand([&store](const dpp::slashcommand_t& event) {
+        if (event.command.get_command_name() == "ping")
+        {
+            event.reply("Pong!");
+        }
+        else if (event.command.get_command_name() == "neko")
+        {
+            const std::string url = nekolib::get_neko(store);
+            event.reply(url);
+        }
+    });
+
+    bot.start(dpp::st_wait);
+
+    delete store;
     return 0;
 }
