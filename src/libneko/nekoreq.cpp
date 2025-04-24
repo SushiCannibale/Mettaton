@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <curl/curl.h>
 #include <curl/easy.h>
+#include <dpp/nlohmann/json.hpp>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -68,15 +69,22 @@ namespace nekolib
         }
         std::ofstream ostr(store_loc);
         fetch_nekos(ostr, neko_source);
-        save_nekos(store, store_loc);
-        return store;
+        save_nekos_impl(store, store_loc);
+        return dynamic_cast<NekoStore*>(store);
     }
 
     int save_nekos_impl(NekoStoreImpl* store, std::string filename)
     {
         std::ofstream ostr(filename);
-        /// TODO: fix me
-        json serialized = *store;
+        if (!ostr.is_open())
+        {
+            return 1;
+        }
+
+        json serialized;
+        // serialized << *store;
+        nlohmann::to_json(serialized, static_cast<NekoStore&>(*store));
+
         ostr << serialized;
         return 0;
     }
@@ -121,9 +129,8 @@ namespace nekolib
             status = 1;
         }
         istr.close();
-
-        /// TODO: fix me
-        json.get_to<NekoStoreImpl>(*store);
+        json.get_to<NekoStoreImpl&>(*store);
+        // json.get_to<NekoStore>(static_cast<NekoStore>(*store));
         return status;
     }
 
