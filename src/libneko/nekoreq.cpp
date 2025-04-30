@@ -3,16 +3,39 @@
 #include <cstdlib>
 #include <curl/curl.h>
 #include <curl/easy.h>
-#include <dpp/nlohmann/json.hpp>
 #include <fstream>
 #include <iostream>
+#include <nlohmann/json.hpp>
 #include <string>
+#include <vector>
 
 #include "mettaton/libneko.h"
 
 namespace nekolib
 {
     using json = nlohmann::json;
+
+    void to_json(json& j, const NekoStoreImpl& p)
+    {
+        std::vector<NekoImpl> v;
+        for (auto ptr = p.nekos.begin(); ptr != p.nekos.end(); ptr++)
+        {
+            v.push_back(dynamic_cast<const NekoImpl&>(*ptr));
+        }
+        j = json{ { "id_next", p.id_next }, { "nekos", v } };
+    }
+
+    void from_json(const json& j, NekoStoreImpl& p)
+    {
+        j.at("id_next").get_to<size_t>(p.id_next);
+
+        std::vector<NekoImpl> v;
+        j.at("nekos").get_to<std::vector<NekoImpl>>(v);
+        for (auto ptr = v.begin(); ptr != v.end(); ptr++)
+        {
+            p.nekos.push_back(dynamic_cast<Neko&>(*ptr));
+        }
+    }
 
     int save_nekos(NekoStore* store, std::string filename)
     {
@@ -81,38 +104,10 @@ namespace nekolib
             return 1;
         }
 
-        json serialized;
-        // serialized << *store;
-        nlohmann::to_json(serialized, static_cast<NekoStore&>(*store));
-
+        json serialized = *store;
         ostr << serialized;
         return 0;
     }
-
-    // std::ofstream ostr(filename);
-    // fetch_nekos(ostr, url.c_str());
-    // ostr.close();
-
-    // std::ifstream istr(filename);
-
-    // json json = store;
-    // json["id_next"] = 0UL;
-    // try
-    // {
-    //     json["nekos"] = json::parse(istr);
-    // }
-    // catch (const json::parse_error& e)
-    // {
-    //     std::cerr << e.what() << std::endl;
-    //     return 1;
-    // }
-    // istr.close();
-
-    // ostr = std::ofstream(filename);
-    // ostr << json;
-    // ostr.close();
-
-    // return 0;
 
     int load_nekos_impl(NekoStoreImpl* store, std::string filename)
     {

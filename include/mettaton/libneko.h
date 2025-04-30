@@ -7,25 +7,20 @@ namespace nekolib
 {
     struct Neko
     {
-        const std::string id;
-        const std::string url;
+        std::string id;
+        std::string url;
         int width;
         int height;
 
         virtual ~Neko() = default;
-
-        NLOHMANN_DEFINE_TYPE_INTRUSIVE(Neko, id, url, width, height)
     };
 
-    // template <typename N>
     struct NekoStore
     {
         size_t id_next;
         std::vector<Neko> nekos;
 
         virtual ~NekoStore() = default;
-
-        NLOHMANN_DEFINE_TYPE_INTRUSIVE(NekoStore, id_next, nekos)
     };
 
     /**
