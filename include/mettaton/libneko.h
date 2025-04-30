@@ -1,6 +1,6 @@
 #pragma once
 
-#include <nlhomann/json.hpp>
+#include <json/json.hpp>
 #include <string>
 
 namespace nekolib

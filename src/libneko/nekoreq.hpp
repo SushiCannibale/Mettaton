@@ -1,8 +1,7 @@
 #pragma once
 
+#include <json/json.hpp>
 #include <mettaton/libneko.h>
-
-#include "nlhomann/json.hpp"
 
 namespace nekolib
 {
@@ -21,5 +20,3 @@ namespace nekolib
     std::string get_neko_impl(NekoStoreImpl* store);
 
 } // namespace nekolib
-
-#include "nekoreq.hxx"
