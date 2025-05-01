@@ -1,6 +1,7 @@
 #pragma once
 
 #include <json/json.hpp>
+#include <ostream>
 #include <string>
 
 namespace nekolib
@@ -13,6 +14,7 @@ namespace nekolib
         int height;
 
         virtual ~Neko() = default;
+        friend std::ostream& operator<<(std::ostream& ostr, const Neko& neko);
     };
 
     struct NekoStore
@@ -21,6 +23,8 @@ namespace nekolib
         std::vector<Neko> nekos;
 
         virtual ~NekoStore() = default;
+        friend std::ostream& operator<<(std::ostream& ostr,
+                                        const NekoStore& store);
     };
 
     /**

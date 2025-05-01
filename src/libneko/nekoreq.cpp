@@ -36,6 +36,27 @@ namespace nekolib
         }
     }
 
+    std::ostream& operator<<(std::ostream& ostr, const Neko& neko)
+    {
+        ostr << "id: " << neko.id << std::endl;
+        ostr << "url: " << neko.url << std::endl;
+        ostr << "width: " << neko.width << std::endl;
+        ostr << "height: " << neko.height << std::endl;
+
+        return ostr;
+    }
+    std::ostream& operator<<(std::ostream& ostr, const NekoStore& store)
+    {
+        ostr << "id_next: " << store.id_next << std::endl;
+        ostr << "nekos: [" << std::endl;
+        for (const auto& neko : store.nekos)
+        {
+            ostr << neko;
+        }
+        ostr << "]" << std::endl;
+        return ostr;
+    }
+
     int save_nekos(NekoStore* store, std::string filename)
     {
         NekoStoreImpl* impl = dynamic_cast<NekoStoreImpl*>(store);
