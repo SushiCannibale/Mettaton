@@ -4,6 +4,7 @@
 #include <curl/easy.h>
 #include <format>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <json/json.hpp>
 #include <mettaton/libneko.h>
@@ -35,6 +36,23 @@ namespace nekolib
         {
             p.nekos.push_back(dynamic_cast<Neko&>(*ptr));
         }
+    }
+
+    std::ostream& operator<<(std::ostream& ostr, const Neko& neko)
+    {
+        const NekoImpl& impl = static_cast<const NekoImpl&>(neko);
+        json json = impl;
+        ostr << std::setw(4) << json;
+
+        return ostr;
+    }
+    std::ostream& operator<<(std::ostream& ostr, const NekoStore& store)
+    {
+        const NekoStoreImpl& impl = static_cast<const NekoStoreImpl&>(store);
+        json json = impl;
+        ostr << std::setw(4) << json;
+
+        return ostr;
     }
 
     int save_nekos(NekoStore* store, std::string filename)

@@ -33,15 +33,21 @@ int main()
 {
     (void)read_token;
     nekolib::NekoStore* store = nekolib::make_store();
+
     nekolib::Neko& neko = nekolib::get_neko(store);
-
-    std::cout << neko.url << std::endl;
-
-    neko = nekolib::get_neko(store);
-    std::cout << neko.url << std::endl;
+    std::cout << "Neko: " << neko << std::endl;
+    std::cout << "Store: " << *store << std::endl;
 
     neko = nekolib::get_neko(store);
-    std::cout << neko.url << std::endl;
+    std::cout << "Neko: " << neko << std::endl;
+    std::cout << "Store: " << *store << std::endl;
+
+    neko = nekolib::get_neko(store);
+    std::cout << "Neko: " << neko << std::endl;
+    std::cout << "Store: " << *store << std::endl;
+
+    nekolib::save_nekos(store, "saved-store.json");
+    delete store;
 
     // std::stringstream sstr;
     // read_token(sstr);
