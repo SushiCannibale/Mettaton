@@ -13,6 +13,8 @@ namespace nekolib
     struct NekoStoreImpl : public NekoStore
     {
         NLOHMANN_DEFINE_TYPE_INTRUSIVE(NekoStoreImpl, id_next, nekos)
+
+        ~NekoStoreImpl() override;
     };
 
     int save_nekos_impl(NekoStoreImpl* store, std::string filename);

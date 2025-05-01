@@ -1,15 +1,12 @@
 #include "nekoreq.hpp"
 
-#include <cstdlib>
 #include <curl/curl.h>
 #include <curl/easy.h>
 #include <format>
 #include <fstream>
-#include <iomanip>
 #include <iostream>
 #include <json/json.hpp>
 #include <mettaton/libneko.h>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -22,7 +19,8 @@ namespace nekolib
         std::vector<NekoImpl> v;
         for (auto ptr = p.nekos.begin(); ptr != p.nekos.end(); ptr++)
         {
-            v.push_back(dynamic_cast<const NekoImpl&>(*ptr));
+            const NekoImpl& cast = static_cast<const NekoImpl&>(*ptr);
+            v.push_back(cast);
         }
         j = json{ { "id_next", p.id_next }, { "nekos", v } };
     }
@@ -62,6 +60,9 @@ namespace nekolib
         NekoStoreImpl* store = new NekoStoreImpl;
         return dynamic_cast<NekoStore*>(store);
     }
+
+    NekoStoreImpl::~NekoStoreImpl()
+    {}
 
     int save_nekos_impl(NekoStoreImpl* store, std::string filename)
     {
