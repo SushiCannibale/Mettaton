@@ -17,6 +17,6 @@ namespace nekolib
 
     int save_nekos_impl(NekoStoreImpl* store, std::string filename);
     int load_nekos_impl(NekoStoreImpl* store, std::string filename);
-    std::string get_neko_impl(NekoStoreImpl* store);
+    Neko& get_neko_impl(NekoStoreImpl* store);
 
 } // namespace nekolib

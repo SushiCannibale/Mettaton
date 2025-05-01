@@ -14,7 +14,6 @@ namespace nekolib
         int height;
 
         virtual ~Neko() = default;
-        friend std::ostream& operator<<(std::ostream& ostr, const Neko& neko);
     };
 
     struct NekoStore
@@ -23,8 +22,6 @@ namespace nekolib
         std::vector<Neko> nekos;
 
         virtual ~NekoStore() = default;
-        friend std::ostream& operator<<(std::ostream& ostr,
-                                        const NekoStore& store);
     };
 
     /**
@@ -52,6 +49,6 @@ namespace nekolib
     /**
      * @brief Get a new neko. Fills the store if necessary
      */
-    std::string get_neko(NekoStore* store);
+    Neko& get_neko(NekoStore* store);
 
 } // namespace nekolib
