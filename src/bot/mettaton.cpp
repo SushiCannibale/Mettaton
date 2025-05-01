@@ -38,15 +38,7 @@ int main()
     std::cout << "Neko: " << neko << std::endl;
     std::cout << "Store: " << *store << std::endl;
 
-    neko = nekolib::get_neko(store);
-    std::cout << "Neko: " << neko << std::endl;
-    std::cout << "Store: " << *store << std::endl;
-
-    neko = nekolib::get_neko(store);
-    std::cout << "Neko: " << neko << std::endl;
-    std::cout << "Store: " << *store << std::endl;
-
-    nekolib::save_nekos(store, "saved-store.json");
+    nekolib::save_nekos(store, "neko-store.json");
     delete store;
 
     // std::stringstream sstr;

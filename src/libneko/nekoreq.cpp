@@ -1,13 +1,17 @@
 #include "nekoreq.hpp"
 
+#include <algorithm>
 #include <curl/curl.h>
 #include <curl/easy.h>
+#include <exception>
 #include <format>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <json/json.hpp>
 #include <mettaton/libneko.h>
+#include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -55,16 +59,16 @@ namespace nekolib
         return ostr;
     }
 
-    int save_nekos(NekoStore* store, std::string filename)
+    void save_nekos(NekoStore* store, std::string filename)
     {
         NekoStoreImpl* impl = dynamic_cast<NekoStoreImpl*>(store);
-        return save_nekos_impl(impl, filename);
+        save_nekos_impl(impl, filename);
     }
 
-    int load_nekos(NekoStore* store, std::string filename)
+    void load_nekos(NekoStore* store, std::string filename)
     {
         NekoStoreImpl* impl = dynamic_cast<NekoStoreImpl*>(store);
-        return load_nekos_impl(impl, filename);
+        load_nekos_impl(impl, filename);
     }
 
     Neko& get_neko(NekoStore* store)
@@ -79,39 +83,28 @@ namespace nekolib
         return dynamic_cast<NekoStore*>(store);
     }
 
-    NekoStoreImpl::~NekoStoreImpl()
-    {}
-
-    int save_nekos_impl(NekoStoreImpl* store, std::string filename)
+    void save_nekos_impl(NekoStoreImpl* store, std::string filename)
     {
         std::ofstream ostr(filename);
-        if (!ostr.is_open())
-        {
-            return 1;
-        }
-
         json serialized = *store;
-        ostr << serialized;
-        return 0;
+        ostr << std::setw(4) << serialized;
+        ostr.close();
     }
 
-    int load_nekos_impl(NekoStoreImpl* store, std::string filename)
+    void load_nekos_impl(NekoStoreImpl* store, std::string filename)
     {
         std::ifstream istr(filename);
         json json;
-        int status = 0;
         try
         {
             json = json::parse(istr);
+            istr.close();
+            json.get_to<NekoStoreImpl&>(*store);
         }
         catch (const json::parse_error& e)
         {
-            std::cerr << e.what() << std::endl;
-            status = 1;
+            throw e;
         }
-        istr.close();
-        json.get_to<NekoStoreImpl&>(*store);
-        return status;
     }
 
     static size_t write_callback(char* data, size_t size, size_t nmemb,
@@ -120,30 +113,9 @@ namespace nekolib
         ostr->write(data, size * nmemb);
         return size * nmemb;
     }
-    /**
-     * @brief Fetch nekos from the source
-     *
-     * @param istr
-     * @return int
-     */
-    static int fetch_nekos(std::ostream& ostr, std::string url)
-    {
-        CURL* curl = curl_easy_init();
-        if (curl != nullptr)
-        {
-            curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-
-            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
-            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ostr);
-
-            curl_easy_perform(curl);
-            curl_easy_cleanup(curl);
-        }
-        return 0;
-    }
 
     /**
-     * @brief Constructs a cURL-able url from envvars
+     * @brief Constructs a cURL-able url from environment variables
      */
     static std::string format_url()
     {
@@ -154,21 +126,67 @@ namespace nekolib
                                       std::string(neko_batch));
         return url;
     }
+    /**
+     * @brief Fetch nekos from the source and fills the store. Synchronized
+     */
+    static void fetch_nekos(NekoStoreImpl* store)
+    {
+        std::string url = format_url();
+        CURL* curl = curl_easy_init();
+        std::stringstream sstr;
+        if (curl != nullptr)
+        {
+            curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &sstr);
+
+            curl_easy_perform(curl);
+            curl_easy_cleanup(curl);
+
+            json j = json::parse(sstr);
+            std::vector<NekoImpl> v;
+            j.get_to<std::vector<NekoImpl>>(v);
+
+            store->nekos.clear();
+            store->id_next = 0;
+
+            for (auto ptr = v.begin(); ptr != v.end(); ptr++)
+            {
+                store->nekos.push_back(static_cast<Neko>(*ptr));
+            }
+        }
+    }
 
     Neko& get_neko_impl(NekoStoreImpl* store)
     {
-        if (store->id_next >= store->nekos.size())
+        const char* neko_store = std::getenv("NEKO_STORE_LOC");
+
+        if (store->id_next < store->nekos.size())
         {
-            const char* neko_store = std::getenv("NEKO_STORE_LOC");
+            return store->nekos[store->id_next++];
+        }
 
-            std::ofstream ostr(neko_store);
-            ostr << "{ \"id_next\": 0, \"nekos\": ";
-            std::string url = format_url();
-            fetch_nekos(ostr, url);
-            ostr << " }";
-            ostr.close();
-
+        std::ifstream istr(neko_store);
+        try
+        {
             load_nekos_impl(store, neko_store);
+            istr.close();
+
+            if (store->id_next >= store->nekos.size())
+            {
+                /// ADD LOGGING
+                istr.close();
+                fetch_nekos(store);
+                save_nekos_impl(store, neko_store);
+            }
+        }
+        catch (const json::parse_error& e)
+        {
+            /// ADD LOGGING
+            istr.close();
+            fetch_nekos(store);
+            save_nekos_impl(store, neko_store);
         }
         return store->nekos[store->id_next++];
     }
