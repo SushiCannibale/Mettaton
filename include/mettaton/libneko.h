@@ -30,29 +30,28 @@ namespace nekolib
     };
 
     /**
-     * @brief Creates a new store. The store is internally bound to a file on
-     * the disk. I/O operations are done at runtime. Caller is responsible of
-     * freeing the store object.
+     * @brief Creates a new empty store.
      */
     NekoStore* make_store();
 
     /**
      * @brief Saves the state of the store on the disk
-     *
-     * @param filename: where to store the nekos
-     * @param url: where to fetch the nekos from
-     * @return either success or failure
      */
-    int save_nekos(NekoStore* store, std::string filename);
+    void save_nekos(NekoStore* store, std::string filename);
 
     /**
      * @brief Fills the store with some nekos patiently waiting to be picked up
-     * on the disk
+     * on the disk.
+     *
+     * @throws json::parse_error The file cannot be parsed correctly
      */
-    int load_nekos(NekoStore* store, std::string filename);
+    void load_nekos(NekoStore* store, std::string filename);
 
     /**
-     * @brief Get a new neko. Fills the store if necessary
+     * @brief Tries to get the next neko from the store. Eventually pulling from
+     * the file located at 'NEKO_STORE'.
+     * If the file cannot be loaded or parsed, then writes data into both the
+     * store structure and the file.
      */
     Neko& get_neko(NekoStore* store);
 
