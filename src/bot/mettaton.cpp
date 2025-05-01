@@ -1,7 +1,9 @@
+#include <curl/curl.h>
 #include <dpp/appcommand.h>
 #include <dpp/dpp.h>
 #include <dpp/message.h>
 #include <mettaton/libneko.h>
+#include <ostream>
 
 static bool read_token(std::ostream& ostr)
 {
@@ -29,7 +31,18 @@ static bool read_token(std::ostream& ostr)
 
 int main()
 {
-    read_token(std::cout);
+    (void)read_token;
+    nekolib::NekoStore* store = nekolib::make_store();
+    nekolib::Neko& neko = nekolib::get_neko(store);
+
+    std::cout << neko.url << std::endl;
+
+    neko = nekolib::get_neko(store);
+    std::cout << neko.url << std::endl;
+
+    neko = nekolib::get_neko(store);
+    std::cout << neko.url << std::endl;
+
     // std::stringstream sstr;
     // read_token(sstr);
     // dpp::cluster bot(sstr.str());

@@ -3,11 +3,13 @@
 #include <cstdlib>
 #include <curl/curl.h>
 #include <curl/easy.h>
+#include <format>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <json/json.hpp>
 #include <mettaton/libneko.h>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -105,12 +107,12 @@ namespace nekolib
      * @param istr
      * @return int
      */
-    static int fetch_nekos(std::ostream& ostr, const char* url)
+    static int fetch_nekos(std::ostream& ostr, std::string url)
     {
         CURL* curl = curl_easy_init();
         if (curl != nullptr)
         {
-            curl_easy_setopt(curl, CURLOPT_URL, url);
+            curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
             curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ostr);
@@ -121,21 +123,33 @@ namespace nekolib
         return 0;
     }
 
+    /**
+     * @brief Constructs a cURL-able url from envvars
+     */
+    static std::string format_url()
+    {
+        const char* neko_source = std::getenv("NEKOS_SOURCE");
+        const char* neko_batch = std::getenv("NEKO_BATCH");
+
+        std::string url = std::format("{}?limit={}", std::string(neko_source),
+                                      std::string(neko_batch));
+        return url;
+    }
+
     Neko& get_neko_impl(NekoStoreImpl* store)
     {
         if (store->id_next >= store->nekos.size())
         {
             const char* neko_store = std::getenv("NEKO_STORE_LOC");
-            const char* neko_source = std::getenv("NEKOS_SOURCE");
+
             std::ofstream ostr(neko_store);
             ostr << "{ \"id_next\": 0, \"nekos\": ";
-            fetch_nekos(ostr, neko_source);
+            std::string url = format_url();
+            fetch_nekos(ostr, url);
             ostr << " }";
-            // TODO: put what we just fetched (i.e. parsed 'vector<Neko>')
-            // inside 'store'
             ostr.close();
+
             load_nekos_impl(store, neko_store);
-            // save_nekos_impl(store, neko_store);
         }
         return store->nekos[store->id_next++];
     }
