@@ -75,6 +75,12 @@ namespace nekolib
         return get_neko_impl(impl);
     }
 
+    static size_t write_callback(char* data, size_t size, size_t nmemb,
+                                 std::ostream* ostr)
+    {
+        ostr->write(data, size * nmemb);
+        return size * nmemb;
+    }
     /**
      * @brief Fetch nekos from the source
      *
@@ -88,11 +94,7 @@ namespace nekolib
         {
             curl_easy_setopt(curl, CURLOPT_URL, url);
 
-            curl_easy_setopt(
-                curl, CURLOPT_WRITEFUNCTION,
-                [](char* data, size_t size, size_t nmemb, std::ofstream* ostr) {
-                    ostr->write(data, size * nmemb);
-                });
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ostr);
 
             curl_easy_perform(curl);
@@ -110,8 +112,8 @@ namespace nekolib
         {
             return nullptr;
         }
-        std::ofstream ostr(store_loc);
-        fetch_nekos(ostr, neko_source);
+        // std::ofstream ostr(store_loc);
+        fetch_nekos(std::cout, neko_source);
         save_nekos_impl(store, store_loc);
         return dynamic_cast<NekoStore*>(store);
     }
