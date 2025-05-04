@@ -7,8 +7,7 @@
 
 static bool read_token(std::ostream& ostr)
 {
-    /// TOOD: char* tokenfile = std::getenv("TOKEN_LOC");
-    const char* tokenfile = "secret";
+    char* tokenfile = std::getenv("TOKEN_LOC");
     if (tokenfile == nullptr)
     {
         return false;
@@ -31,48 +30,38 @@ static bool read_token(std::ostream& ostr)
 
 int main()
 {
-    (void)read_token;
+    std::stringstream sstr;
+    read_token(sstr);
+    dpp::cluster bot(sstr.str());
     nekolib::NekoStore* store = nekolib::make_store();
 
-    nekolib::Neko& neko = nekolib::get_neko(store);
-    std::cout << "Neko: " << neko << std::endl;
-    std::cout << "Store: " << *store << std::endl;
+    /// Register handlers
+    bot.on_ready([&bot](const dpp::ready_t& event) {
+        (void)event;
+        if (dpp::run_once<struct uwuland_registry>())
+        {
+            std::cout << bot.me.username << " ready!\n";
+            bot.global_command_create(
+                dpp::slashcommand("ping", "Dare u ping me", bot.me.id));
+            bot.global_command_create(
+                dpp::slashcommand("neko", "Some cute neko", bot.me.id));
+        }
+    });
 
-    nekolib::save_nekos(store, "neko-store.json");
+    bot.on_slashcommand([&store](const dpp::slashcommand_t& event) {
+        if (event.command.get_command_name() == "ping")
+        {
+            event.reply("Pong!");
+        }
+        else if (event.command.get_command_name() == "neko")
+        {
+            nekolib::Neko& neko = nekolib::get_neko(store);
+            event.reply(neko.url);
+        }
+    });
+
+    bot.start(dpp::st_wait);
+
     delete store;
-
-    // std::stringstream sstr;
-    // read_token(sstr);
-    // dpp::cluster bot(sstr.str());
-    // nekolib::NekoStore* store = nekolib::make_store();
-
-    // /// Register handlers
-    // bot.on_ready([&bot](const dpp::ready_t& event) {
-    //     (void)event;
-    //     if (dpp::run_once<struct uwuland_registry>())
-    //     {
-    //         std::cout << bot.me.username << " ready!\n";
-    //         bot.global_command_create(
-    //             dpp::slashcommand("ping", "Dare u ping me", bot.me.id));
-    //         bot.global_command_create(
-    //             dpp::slashcommand("neko", "Some cute neko", bot.me.id));
-    //     }
-    // });
-
-    // bot.on_slashcommand([&store](const dpp::slashcommand_t& event) {
-    //     if (event.command.get_command_name() == "ping")
-    //     {
-    //         event.reply("Pong!");
-    //     }
-    //     else if (event.command.get_command_name() == "neko")
-    //     {
-    //         const std::string url = nekolib::get_neko(store);
-    //         event.reply(url);
-    //     }
-    // });
-
-    // bot.start(dpp::st_wait);
-
-    // delete store;
-    // return 0;
+    return 0;
 }
