@@ -3,6 +3,8 @@ project(mettaton)
 
 set(LIBNEKO "libneko")
 
+include(cmake/CPM.cmake)
+
 # bot
 add_executable(${PROJECT_NAME})
 target_compile_options(${PROJECT_NAME} PRIVATE 
