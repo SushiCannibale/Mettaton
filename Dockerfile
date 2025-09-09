@@ -1,25 +1,39 @@
-# build
-FROM alpine:3.21.3 AS neko-build
+### BUILD ###
+FROM debian:12.12 AS builder
 
-RUN set -ex && \
-    apk add --no-cache gcc musl-dev
+# RUN set -ex && \
+#     apk add --no-cache \
+#     build-base \
+#     git \
+#     cmake \
+#     zlib-dev \
+#     curl-dev \
+#     openssl-dev \
+#     libidn2-dev
 
-RUN set -ex && \
-    rm -f /usr/libexec/gcc/x86_64-alpine-linux-musl/6.4.0/cc1obj && \
-    rm -f /usr/libexec/gcc/x86_64-alpine-linux-musl/6.4.0/lto1 && \
-    rm -f /usr/libexec/gcc/x86_64-alpine-linux-musl/6.4.0/lto-wrapper && \
-    rm -f /usr/bin/x86_64-alpine-linux-musl-gcj
+# ENV CFLAGS="-static" \
+#     CXXFLAGS="-static" \
+#     LDFLAGS="-static"
 
-WORKDIR /src
+RUN apt install cmake=4.1.1
+
+WORKDIR /app
 COPY . .
+
+RUN cmake -S . -B build
+
+RUN cmake --build build --target mettaton -j$(nproc)
+
+### RUN ###
+FROM alpine:3.21.3 AS runtime
+
+WORKDIR /var
+COPY --from=builder /app/build/mettaton mettaton
+COPY secret .
 
 ENV TOKEN_LOC='secret'
 ENV NEKOS_SOURCE='https://api.thecatapi.com/v1/images/search'
 ENV NEKO_STORE_LOC='neko-store.json'
 ENV NEKOS_BATCH='20'
 
-CMD [ "cmake", "-B", "build" ]
-CMD [ "cmake", "--build", "build" ]
-
-# runtime
-FROM
+ENTRYPOINT ["/var/mettaton"]
