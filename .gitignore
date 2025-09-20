@@ -1,7 +1,8 @@
 secret
-build
+build/
 *.o
 *.so
 *.ll
-.cache
+.cache/
 compile_commands.json
+store/

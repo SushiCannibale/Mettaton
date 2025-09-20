@@ -40,11 +40,4 @@ COPY --from=builder /app/build/_deps/dpp-build/library/libdpp.so* /usr/lib/
 COPY --from=builder /app/build/mettaton .
 COPY secret .
 
-VOLUME "neko-store.json"
-
-ENV TOKEN_LOC='secret'
-ENV NEKOS_SOURCE='https://api.thecatapi.com/v1/images/search'
-ENV NEKO_STORE_LOC='neko-store.json'
-ENV NEKO_BATCH='20'
-
 CMD ["./mettaton"]
