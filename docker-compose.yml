@@ -6,7 +6,7 @@ services:
         environment:
             - TOKEN_LOC=secret
             - NEKOS_SOURCE=https://api.thecatapi.com/v1/images/search
-            - NEKO_STORE_LOC=neko-store.json
+            - NEKO_STORE_LOC=/store/neko-store.json
             - NEKO_BATCH=20
         volumes:
         - ./store:/store
