@@ -1,6 +1,6 @@
 services:
     mettaton:
-        image: .
+        build: .
         container_name: mettaton
         hostname: mettaton
         environment:
