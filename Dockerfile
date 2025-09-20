@@ -1,44 +1,50 @@
 ### BUILD ###
-FROM debian AS builder
+FROM alpine:3.21.3 AS builder
 
-# RUN set -ex && \
-#     apk add --no-cache \
-#     build-base \
-#     git \
-#     cmake \
-#     zlib-dev \
-#     curl-dev \
-#     openssl-dev \
-#     libidn2-dev
-
-# ENV CFLAGS="-static" \
-#     CXXFLAGS="-static" \
-#     LDFLAGS="-static"
-
-RUN apt-get update
-RUN apt-get install -y cmake
+RUN set -ex && \
+    apk add --no-cache \
+    build-base \
+    git \
+    cmake \
+    openssl-dev \
+    zlib-dev
 
 WORKDIR /app
 COPY . .
 
-RUN cmake -S . -B build
-RUN cmake --build build --target mettaton -j$(nproc)
+RUN cmake -S . -B build \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCURL_USE_OPENSSL=ON \
+    -DCURL_ZLIB=ON \
+    -DCURL_USE_LIBPSL=OFF
+    # -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+    # -DBUILD_SHARED_LIBS=OFF \
+    # -DCMAKE_EXE_LINKER_FLAGS="-static"
 
-### RUN ###
+RUN cmake --build build -j$(nproc)
+
+### --- runtime --- ###
 FROM alpine:3.21.3 AS runtime
 
 RUN set -ex && \
     apk add --no-cache \
-    curl \
-    openssl
+    ca-certificates \
+    openssl \
+    zlib \
+    gdb
 
-WORKDIR /var
-COPY --from=builder /app/build/mettaton mettaton
+WORKDIR /app
+COPY --from=builder /usr/lib/*.so* /usr/lib/
+COPY --from=builder /app/build/libneko.so /usr/lib/
+COPY --from=builder /app/build/_deps/dpp-build/library/libdpp.so* /usr/lib/
+COPY --from=builder /app/build/mettaton .
 COPY secret .
+
+VOLUME "neko-store.json"
 
 ENV TOKEN_LOC='secret'
 ENV NEKOS_SOURCE='https://api.thecatapi.com/v1/images/search'
 ENV NEKO_STORE_LOC='neko-store.json'
 ENV NEKO_BATCH='20'
 
-ENTRYPOINT ["/var/mettaton"]
+CMD ["./mettaton"]

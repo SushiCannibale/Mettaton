@@ -1,0 +1,9 @@
+.cache
+cmake
+.clang-format
+.gitignore
+.dockerignore
+compile_commands.json
+Dockerfile
+neko-store.json
+README.md
