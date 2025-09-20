@@ -3,14 +3,14 @@ project(mettaton)
 
 set(LIBNEKO "libneko")
 
-include(cmake/CPM.cmake)
+# include(cmake/CPM.cmake)
 
 # bot
 add_executable(${PROJECT_NAME})
 target_compile_options(${PROJECT_NAME} PRIVATE 
     -Wall
     -Wextra
-    -Werror
+    # -Werror
     -pedantic
     -std=c++20
 )
