@@ -1,13 +1,12 @@
 services:
-    mettaton:
-        build: .
-        container_name: mettaton
-        hostname: mettaton
-        environment:
-            - TOKEN_LOC=secret
-            - NEKOS_SOURCE=https://api.thecatapi.com/v1/images/search
-            - NEKO_STORE_LOC=/store/neko-store.json
-            - NEKO_BATCH=20
-        volumes:
-        - ./store:/store
-        
+  mettaton:
+    build: .
+    container_name: mettaton
+    hostname: mettaton
+    environment:
+      - TOKEN_LOC=secret
+      - NEKOS_SOURCE=https://api.thecatapi.com/v1/images/search
+      - NEKO_STORE_LOC=/store/neko-store.json
+      - NEKO_BATCH=20
+    volumes:
+      - ./store:/store
