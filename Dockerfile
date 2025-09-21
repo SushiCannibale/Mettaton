@@ -10,7 +10,9 @@ RUN set -ex && \
     zlib-dev
 
 WORKDIR /app
-COPY . .
+COPY CMakeLists.txt CMakeLists.txt
+COPY src/ src/
+COPY include/ include/
 
 RUN cmake -S . -B build \
     -DCMAKE_BUILD_TYPE=Release \
