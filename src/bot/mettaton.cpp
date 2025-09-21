@@ -17,8 +17,7 @@ static void save_exit(int sig)
         nekolib::save_nekos(store);
     }
 
-    std::cout << "SIGINT" << std::endl;
-    exit(sig);
+    exit(0);
 }
 
 static bool read_token(std::ostream& ostr)
@@ -66,7 +65,7 @@ int main()
         }
     });
 
-    bot.on_slashcommand([&store](const dpp::slashcommand_t& event) {
+    bot.on_slashcommand([](const dpp::slashcommand_t& event) {
         if (event.command.get_command_name() == "ping")
         {
             event.reply("Pong!");
