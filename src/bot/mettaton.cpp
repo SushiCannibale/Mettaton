@@ -1,9 +1,25 @@
+#include <cstdlib>
 #include <curl/curl.h>
 #include <dpp/appcommand.h>
 #include <dpp/dpp.h>
 #include <dpp/message.h>
+#include <fstream>
 #include <mettaton/libneko.h>
 #include <ostream>
+#include <signal.h>
+
+static nekolib::NekoStore* store = nullptr;
+
+static void save_exit(int sig)
+{
+    if (store != nullptr)
+    {
+        nekolib::save_nekos(store);
+    }
+
+    std::cout << "SIGINT" << std::endl;
+    exit(sig);
+}
 
 static bool read_token(std::ostream& ostr)
 {
@@ -33,7 +49,9 @@ int main()
     std::stringstream sstr;
     read_token(sstr);
     dpp::cluster bot(sstr.str());
-    nekolib::NekoStore* store = nekolib::make_store();
+    store = nekolib::make_store();
+
+    signal(SIGINT, save_exit);
 
     /// Register handlers
     bot.on_ready([&bot](const dpp::ready_t& event) {

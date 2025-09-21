@@ -37,7 +37,7 @@ namespace nekolib
     /**
      * @brief Saves the state of the store on the disk
      */
-    void save_nekos(NekoStore* store, std::string filename);
+    void save_nekos(NekoStore* store);
 
     /**
      * @brief Fills the store with some nekos patiently waiting to be picked up
@@ -45,7 +45,7 @@ namespace nekolib
      *
      * @throws json::parse_error The file cannot be parsed correctly
      */
-    void load_nekos(NekoStore* store, std::string filename);
+    void load_nekos(NekoStore* store);
 
     /**
      * @brief Tries to get the next neko from the store. Eventually pulling from

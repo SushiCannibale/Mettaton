@@ -59,16 +59,16 @@ namespace nekolib
         return ostr;
     }
 
-    void save_nekos(NekoStore* store, std::string filename)
+    void save_nekos(NekoStore* store)
     {
         NekoStoreImpl* impl = dynamic_cast<NekoStoreImpl*>(store);
-        save_nekos_impl(impl, filename);
+        save_nekos_impl(impl);
     }
 
-    void load_nekos(NekoStore* store, std::string filename)
+    void load_nekos(NekoStore* store)
     {
         NekoStoreImpl* impl = dynamic_cast<NekoStoreImpl*>(store);
-        load_nekos_impl(impl, filename);
+        load_nekos_impl(impl);
     }
 
     Neko& get_neko(NekoStore* store)
@@ -83,17 +83,19 @@ namespace nekolib
         return dynamic_cast<NekoStore*>(store);
     }
 
-    void save_nekos_impl(NekoStoreImpl* store, std::string filename)
+    void save_nekos_impl(NekoStoreImpl* store)
     {
-        std::ofstream ostr(filename);
+        const char* neko_store = std::getenv("NEKO_STORE_LOC");
+        std::ofstream ostr(neko_store);
         json serialized = *store;
         ostr << std::setw(4) << serialized;
         ostr.close();
     }
 
-    void load_nekos_impl(NekoStoreImpl* store, std::string filename)
+    void load_nekos_impl(NekoStoreImpl* store)
     {
-        std::ifstream istr(filename);
+        const char* neko_store = std::getenv("NEKO_STORE_LOC");
+        std::ifstream istr(neko_store);
         json json;
         try
         {
@@ -160,17 +162,17 @@ namespace nekolib
 
     Neko& get_neko_impl(NekoStoreImpl* store)
     {
-        const char* neko_store = std::getenv("NEKO_STORE_LOC");
 
         if (store->id_next < store->nekos.size())
         {
             return store->nekos[store->id_next++];
         }
 
+        const char* neko_store = std::getenv("NEKO_STORE_LOC");
         std::ifstream istr(neko_store);
         try
         {
-            load_nekos_impl(store, neko_store);
+            load_nekos_impl(store);
             istr.close();
 
             if (store->id_next >= store->nekos.size())
@@ -178,7 +180,7 @@ namespace nekolib
                 /// ADD LOGGING
                 istr.close();
                 fetch_nekos(store);
-                save_nekos_impl(store, neko_store);
+                save_nekos_impl(store);
             }
         }
         catch (const json::parse_error& e)
@@ -186,7 +188,7 @@ namespace nekolib
             /// ADD LOGGING
             istr.close();
             fetch_nekos(store);
-            save_nekos_impl(store, neko_store);
+            save_nekos_impl(store);
         }
         return store->nekos[store->id_next++];
     }

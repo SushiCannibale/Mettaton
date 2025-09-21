@@ -15,8 +15,8 @@ namespace nekolib
         NLOHMANN_DEFINE_TYPE_INTRUSIVE(NekoStoreImpl, id_next, nekos)
     };
 
-    void save_nekos_impl(NekoStoreImpl* store, std::string filename);
-    void load_nekos_impl(NekoStoreImpl* store, std::string filename);
+    void save_nekos_impl(NekoStoreImpl* store);
+    void load_nekos_impl(NekoStoreImpl* store);
     Neko& get_neko_impl(NekoStoreImpl* store);
 
 } // namespace nekolib
