@@ -1,3 +1,4 @@
+#include <csignal>
 #include <cstdlib>
 #include <curl/curl.h>
 #include <dpp/appcommand.h>
@@ -51,6 +52,8 @@ int main()
     store = nekolib::make_store();
 
     signal(SIGINT, save_exit);
+    signal(SIGTERM, save_exit);
+    signal(SIGKILL, save_exit);
 
     /// Register handlers
     bot.on_ready([&bot](const dpp::ready_t& event) {
